@@ -3,298 +3,600 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鬼ごっこ 役割ランダム決定システム</title>
+    <title>タスク管理 タイムテーブル＆ToDoリスト</title>
     
     <style>
+        /* --- 全体設定 --- */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background-color: #f0f4f8; /* 薄いグレーブルーの背景 */
             color: #333;
-            padding: 20px;
-            text-align: center;
+            line-height: 1.6;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
-            color: #007bff;
+            text-align: center;
+            color: #1a73e8; /* 鮮やかな青 */
+            margin-bottom: 30px;
+            font-size: 2em;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
         }
 
         h2 {
-            border-bottom: 2px solid #ccc;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
-
-        #settings-screen, #check-screen {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 25px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .role-input-group {
-            display: flex;
-            justify-content: space-between;
+            color: #3f51b5; /* 落ち着いたインディゴブルー */
+            border-bottom: 2px solid #bbdefb;
+            padding-bottom: 5px;
             margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        /* --- 入力・設定エリア --- */
+        .date-section, .input-section, .settings {
+            background: #f7f9fc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
             align-items: center;
+            gap: 15px;
+            border: 1px solid #e3f2fd;
+            flex-wrap: wrap;
         }
 
-        .role-input-group input[type="text"] {
-            flex-grow: 2;
-            padding: 8px;
-            margin-right: 10px;
+        label {
+            font-weight: 600;
+            color: #1e88e5;
+            white-space: nowrap;
+        }
+
+        input[type="text"], input[type="number"], input[type="time"], input[type="date"] {
+            padding: 10px 12px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            flex-grow: 1;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            min-width: 80px;
         }
 
-        .role-input-group input[type="number"] {
-            width: 60px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            text-align: center;
+        input:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+            outline: none;
         }
 
+        /* 日付セクションの調整 */
+        .date-section {
+            justify-content: space-between;
+        }
+        .today-date-display {
+            font-weight: 600;
+            color: #0b519c;
+        }
+
+        /* --- ボタンデザイン --- */
         button {
-            background-color: #007bff;
+            background-color: #1a73e8;
             color: white;
+            padding: 10px 15px;
             border: none;
-            padding: 10px 20px;
-            margin-top: 10px;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
+            font-weight: 500;
+            transition: background-color 0.2s, transform 0.1s;
         }
 
-        button:hover:not(:disabled) {
-            background-color: #0056b3;
+        button:hover {
+            background-color: #0b519c;
+            transform: translateY(-1px);
         }
 
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
+        .save-button {
+            background-color: #4CAF50;
+        }
+        .save-button:hover {
+            background-color: #388E3C;
+        }
+        .load-button {
+            background-color: #FFC107;
+            color: #333;
+        }
+        .load-button:hover {
+            background-color: #FFB300;
         }
 
-        #role-display {
-            margin-top: 20px;
+        /* --- タイムテーブル --- */
+        .timetable-container {
+            margin-top: 25px;
+        }
+
+        #timetable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        #timetable th, #timetable td {
+            border: 1px solid #f0f0f0;
+            padding: 12px;
+            text-align: left;
+        }
+
+        #timetable thead th {
+            background-color: #e3f2fd;
+            color: #1a73e8;
+            font-weight: 700;
+        }
+
+        #timetable tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        #timetable tbody tr:hover {
+            background-color: #eef5fc;
+        }
+
+        /* --- 前日のスケジュールエリア --- */
+        .yesterday-schedule {
+            margin-top: 25px;
+            padding: 15px;
+            border: 1px solid #bbdefb;
+            background-color: #e3f2fd;
+            border-radius: 6px;
+        }
+
+        #yesterday-tasks {
+            white-space: pre-wrap;
+            padding: 10px 0;
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: #333;
+            font-size: 0.9em;
+        }
+        
+        /* --- ToDoリストエリアのスタイル --- */
+        .todo-container {
+            margin-top: 30px;
             padding: 20px;
-            border: 2px dashed #ffc107;
-            background-color: #fff3cd;
-            border-radius: 8px;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
-        .role-name {
-            font-size: 32px;
-            font-weight: bold;
-            color: #dc3545; /* 重要な役割を目立たせる色 */
-            margin: 10px 0;
+        .todo-container h2 {
+            color: #3f51b5;
+            border-bottom: 2px solid #e0e0e0;
         }
 
-        .error {
-            color: red;
+        .todo-input {
+            display: flex;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .todo-input input {
+            flex-grow: 1;
+            border: 1px solid #ccc;
+        }
+
+        .todo-input button {
+            background-color: #607d8b;
+            width: 80px;
+            padding: 8px 10px;
+        }
+        .todo-input button:hover {
+            background-color: #455a64;
+        }
+
+        #todo-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        #todo-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dotted #e0e0e0;
+        }
+
+        #todo-list li:last-child {
+            border-bottom: none;
+        }
+
+        .todo-item-text {
+            flex-grow: 1;
+            margin-left: 10px;
+            transition: color 0.3s;
+        }
+
+        .completed .todo-item-text {
+            text-decoration: line-through;
+            color: #9e9e9e;
+        }
+
+        .delete-todo-button {
+            background: none;
+            border: none;
+            color: #f44336;
+            cursor: pointer;
             font-weight: bold;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+
+        .delete-todo-button:hover {
+            color: #d32f2f;
+            transform: none;
+        }
+        
+        .note {
+            text-align: right;
+            font-size: 0.85em;
+            color: #616161;
             margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>鬼ごっこ 役割ランダム決定システム</h1>
+    <div class="container">
+        <h1>タスク管理 タイムテーブル</h1>
 
-    <div id="settings-screen">
-        <h2>役割と人数の設定</h2>
-        <div id="roles-container">
-            </div>
-
-        <button onclick="addRoleInput()">役割を追加</button>
-        <p>合計参加人数: <span id="total-participants">0</span> 人</p>
-        <button id="start-button" onclick="startGame()" disabled>役割を決定し、開始</button>
-        <p id="error-message" class="error"></p>
-    </div>
-
-    <div id="check-screen" style="display:none;">
-        <h2 id="participant-number">参加者 1 の役割確認</h2>
-        <p>他の人に見られないように、画面を下に渡してください。</p>
-        <button id="check-role-button" onclick="showRole()">役割を確認する</button>
-
-        <div id="role-display" style="display:none;">
-            <h3>あなたの役割は...</h3>
-            <p id="assigned-role" class="role-name"></p>
+        <div class="date-section">
+            <label for="schedule-date">スケジュール日付:</label>
+            <input type="date" id="schedule-date">
+            <span id="today-date-display" class="today-date-display"></span>
         </div>
 
-        <button id="next-button" onclick="nextParticipant()" style="display:none;">次の参加者へ</button>
-        <button id="reset-button" onclick="resetGame()" style="display:none; margin-top: 10px;">最初からやり直す</button>
+        <div class="input-section">
+            <label for="task-name">タスク名:</label>
+            <input type="text" id="task-name" placeholder="例: 資格の勉強">
+
+            <label for="task-start-time">開始時刻:</label>
+            <input type="time" id="task-start-time" value="09:00"> 
+
+            <label for="task-duration">所要時間 (分):</label>
+            <input type="number" id="task-duration" min="5" value="60">
+
+            <button onclick="addTask()">タスクを追加</button>
+        </div>
+
+        <div class="settings">
+            <button onclick="saveSchedule()" class="save-button">この日のスケジュールを保存</button>
+            <button onclick="loadSchedule()" class="load-button">保存したスケジュールを読み込む</button>
+        </div>
+
+        <div class="yesterday-schedule">
+            <h2>前日（<span id="yesterday-date"></span>）の計画</h2>
+            <div id="yesterday-tasks">前日のスケジュールは保存されていません。</div>
+        </div>
+        
+        <div class="timetable-container">
+            <h2>本日のタイムライン</h2>
+            <table id="timetable">
+                <thead>
+                    <tr>
+                        <th>開始時刻</th>
+                        <th>終了時刻</th>
+                        <th>タスク名</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+        
+        <div class="todo-container">
+            <h2>今日のToDoリスト</h2>
+            <div class="todo-input">
+                <input type="text" id="new-todo" placeholder="新しいToDoを入力...">
+                <button onclick="addTodo()">追加</button>
+            </div>
+            <ul id="todo-list">
+                </ul>
+        </div>
+        
+        <p class="note">※タスクは設定した開始時刻順に並べ替えられます。</p>
     </div>
 
     <script>
-        let roles = []; // 確定した役割リスト (例: ['鬼', '鬼', '逃走者', ...])
-        let participantCount = 0; // 現在の参加者番号
-        const rolesContainer = document.getElementById('roles-container');
-        const totalParticipantsSpan = document.getElementById('total-participants');
-        const startButton = document.getElementById('start-button');
-        const errorMessage = document.getElementById('error-message');
-
-        // --- 役割設定画面のロジック ---
+        // タスクとToDoを保持する配列
+        let tasks = [];
+        let todos = [];
+        const dateInput = document.getElementById('schedule-date');
 
         /**
-         * 役割入力フィールドを動的に追加する
+         * ページ読み込み時の初期化
          */
-        function addRoleInput() {
-            const roleGroup = document.createElement('div');
-            roleGroup.classList.add('role-input-group');
-            roleGroup.innerHTML = `
-                <input type="text" placeholder="役割名 (例: 鬼)" class="role-name-input" oninput="updateTotalParticipants()">
-                <input type="number" placeholder="人数" min="1" value="1" class="role-count-input" oninput="updateTotalParticipants()">
-            `;
-            rolesContainer.appendChild(roleGroup);
-            updateTotalParticipants(); // 初期値で更新
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            // 今日の日付をセット
+            const today = new Date();
+            const todayISO = today.toISOString().split('T')[0];
+            dateInput.value = todayISO;
+            document.getElementById('today-date-display').textContent = `今日は ${formatDate(today)} です`;
+
+            // スケジュール、前日スケジュール、ToDoリストのロード
+            loadSchedule(todayISO);
+            loadYesterdaySchedule(today);
+            loadTodos(); 
+        });
+
+
+        // --- タイムテーブル機能 ---
 
         /**
-         * 現在の役割の合計人数を計算し、表示を更新する
+         * タスクを追加し、タイムテーブルを更新する
          */
-        function updateTotalParticipants() {
-            const roleNames = document.querySelectorAll('.role-name-input');
-            const roleCounts = document.querySelectorAll('.role-count-input');
-            let total = 0;
-            let allValid = true;
+        function addTask() {
+            const taskNameInput = document.getElementById('task-name');
+            const taskStartTimeInput = document.getElementById('task-start-time'); 
+            const taskDurationInput = document.getElementById('task-duration');
 
-            for (let i = 0; i < roleCounts.length; i++) {
-                const count = parseInt(roleCounts[i].value);
-                const name = roleNames[i].value.trim();
+            const name = taskNameInput.value.trim();
+            const startTime = taskStartTimeInput.value; 
+            const duration = parseInt(taskDurationInput.value);
 
-                if (isNaN(count) || count < 1 || name === "") {
-                    allValid = false;
-                }
-                if (!isNaN(count)) {
-                    total += count;
-                }
-            }
-
-            totalParticipantsSpan.textContent = total;
-
-            // 役割が1つ以上定義され、合計人数が1人以上で、全ての入力が有効ならボタンを有効化
-            if (total >= 1 && roleNames.length >= 1 && allValid) {
-                startButton.disabled = false;
-                errorMessage.textContent = '';
-            } else if (roleNames.length === 0) {
-                startButton.disabled = true;
-                errorMessage.textContent = '役割を最低1つ設定してください。';
-            } else {
-                startButton.disabled = true;
-                errorMessage.textContent = '役割名を入力し、人数を1人以上に設定してください。';
-            }
-        }
-
-        /**
-         * 役割設定を確定し、ゲームを開始する (役割の決定とシャッフル)
-         */
-        function startGame() {
-            const roleNames = document.querySelectorAll('.role-name-input');
-            const roleCounts = document.querySelectorAll('.role-count-input');
-            let tempRoles = [];
-
-            // 役割リストを作成
-            for (let i = 0; i < roleNames.length; i++) {
-                const name = roleNames[i].value.trim();
-                const count = parseInt(roleCounts[i].value);
-
-                if (name && count >= 1) {
-                    for (let j = 0; j < count; j++) {
-                        tempRoles.push(name);
-                    }
-                }
-            }
-
-            if (tempRoles.length === 0) {
-                errorMessage.textContent = '役割と人数を正しく設定してください。';
+            if (name === '' || startTime === '' || isNaN(duration) || duration <= 0) {
+                alert('タスク名、開始時刻、正の所要時間（分）を入力してください。');
                 return;
             }
 
-            // 役割をランダムにシャッフル
-            roles = shuffleArray(tempRoles);
-            participantCount = 1;
+            tasks.push({ name, startTime, duration }); 
+            taskNameInput.value = '';
+            taskStartTimeInput.value = startTime; 
 
-            // 画面切り替え
-            document.getElementById('settings-screen').style.display = 'none';
-            document.getElementById('check-screen').style.display = 'block';
-            updateCheckScreen();
+            renderTimetable();
         }
 
         /**
-         * 配列をシャッフルする (Fisher-Yatesアルゴリズム)
-         * @param {Array} array - シャッフルする配列
-         * @returns {Array} シャッフルされた新しい配列
+         * タスクを開始時刻順に並び替え、タイムテーブルを生成する
          */
-        function shuffleArray(array) {
-            const newArray = [...array];
-            for (let i = newArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-            }
-            return newArray;
-        }
+        function renderTimetable() {
+            const timetableBody = document.querySelector('#timetable tbody');
+            
+            const sortedTasks = [...tasks].sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-        // --- 役割確認画面のロジック ---
+            timetableBody.innerHTML = '';
+
+            sortedTasks.forEach(task => {
+                const startTimeStr = task.startTime;
+                
+                const [startHour, startMinute] = startTimeStr.split(':').map(Number);
+                const startMinutes = startHour * 60 + startMinute;
+                
+                const endMinutes = startMinutes + task.duration;
+                const endTimeStr = formatMinutesToTime(endMinutes);
+
+                const row = timetableBody.insertRow();
+                row.insertCell(0).textContent = startTimeStr; 
+                row.insertCell(1).textContent = endTimeStr;
+                row.insertCell(2).textContent = task.name;
+            });
+        }
+        
+        // --- ToDoリスト機能 ---
 
         /**
-         * 役割確認画面の表示を更新する
+         * ToDoリストをlocalStorageからロードする
          */
-        function updateCheckScreen() {
-            document.getElementById('participant-number').textContent = `参加者 ${participantCount} の役割確認`;
-            document.getElementById('role-display').style.display = 'none';
-            document.getElementById('check-role-button').style.display = 'block';
-            document.getElementById('next-button').style.display = 'none';
-            document.getElementById('reset-button').style.display = 'none';
-        }
+        function loadTodos() {
+            const dateKey = dateInput.value;
+            const key = 'daily_todos_' + dateKey;
+            const savedTodosJson = localStorage.getItem(key);
 
-        /**
-         * 自分の役割を表示する
-         */
-        function showRole() {
-            const roleIndex = participantCount - 1;
-            const assignedRole = roles[roleIndex];
-
-            document.getElementById('assigned-role').textContent = assignedRole;
-            document.getElementById('role-display').style.display = 'block';
-            document.getElementById('check-role-button').style.display = 'none';
-
-            // 最後の参加者でなければ「次へ」ボタンを表示
-            if (participantCount < roles.length) {
-                document.getElementById('next-button').style.display = 'block';
+            if (savedTodosJson) {
+                todos = JSON.parse(savedTodosJson);
             } else {
-                // 全員確認完了
-                document.getElementById('next-button').style.display = 'none';
-                document.getElementById('reset-button').style.display = 'block';
-                document.getElementById('participant-number').textContent = `全員の確認が完了しました！`;
+                todos = [];
+            }
+            renderTodos();
+        }
+
+        /**
+         * ToDoリストをlocalStorageに保存する
+         */
+        function saveTodos() {
+            const dateKey = dateInput.value;
+            const key = 'daily_todos_' + dateKey;
+            localStorage.setItem(key, JSON.stringify(todos));
+        }
+
+        /**
+         * ToDoリストにアイテムを追加する
+         */
+        function addTodo() {
+            const newTodoInput = document.getElementById('new-todo');
+            const text = newTodoInput.value.trim();
+
+            if (text === '') {
+                alert('ToDoを入力してください。');
+                return;
+            }
+
+            todos.push({ text: text, completed: false });
+            newTodoInput.value = ''; 
+            saveTodos();
+            renderTodos();
+        }
+
+        /**
+         * ToDoリストの表示を更新する
+         */
+        function renderTodos() {
+            const todoListUl = document.getElementById('todo-list');
+            todoListUl.innerHTML = '';
+
+            todos.forEach((todo, index) => {
+                const li = document.createElement('li');
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = todo.completed;
+                checkbox.onclick = () => toggleTodo(index);
+
+                const span = document.createElement('span');
+                span.textContent = todo.text;
+                span.classList.add('todo-item-text');
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'X';
+                deleteButton.classList.add('delete-todo-button');
+                deleteButton.onclick = () => deleteTodo(index);
+
+                li.appendChild(checkbox);
+                li.appendChild(span);
+                li.appendChild(deleteButton);
+                
+                if (todo.completed) {
+                    li.classList.add('completed');
+                }
+
+                todoListUl.appendChild(li);
+            });
+        }
+
+        /**
+         * ToDoの完了状態を切り替える
+         */
+        function toggleTodo(index) {
+            todos[index].completed = !todos[index].completed;
+            saveTodos();
+            renderTodos();
+        }
+
+        /**
+         * ToDoを削除する
+         */
+        function deleteTodo(index) {
+            todos.splice(index, 1);
+            saveTodos();
+            renderTodos();
+        }
+
+
+        // --- スケジュール保存/読み込み機能 ---
+
+        /**
+         * 現在のタスクリストをlocalStorageに保存する
+         */
+        function saveSchedule() {
+            const dateKey = dateInput.value;
+            if (!dateKey) {
+                alert('日付を選択してください。');
+                return;
+            }
+            localStorage.setItem(dateKey, JSON.stringify(tasks));
+            saveTodos(); // ★スケジュール保存時にToDoも保存
+            alert(`${dateKey} のスケジュールとToDoリストを保存しました！`);
+        }
+
+        /**
+         * 選択された日付のスケジュールをlocalStorageから読み込む
+         */
+        function loadSchedule(dateKey = dateInput.value) {
+            if (!dateKey) {
+                tasks = []; 
+                renderTimetable();
+                return;
+            }
+            
+            const savedTasksJson = localStorage.getItem(dateKey);
+
+            if (savedTasksJson) {
+                tasks = JSON.parse(savedTasksJson);
+            } else {
+                tasks = []; 
+            }
+            renderTimetable();
+        }
+
+
+        // --- 前日のスケジュール表示機能 ---
+
+        /**
+         * 指定された日付の前日のスケジュールを読み込んで表示する
+         */
+        function loadYesterdaySchedule(currentDate) {
+            const yesterday = new Date(currentDate);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            const yesterdayISO = yesterday.toISOString().split('T')[0];
+            const savedTasksJson = localStorage.getItem(yesterdayISO);
+            const yesterdayTasksDiv = document.getElementById('yesterday-tasks');
+            
+            document.getElementById('yesterday-date').textContent = formatDate(yesterday);
+
+            if (savedTasksJson) {
+                const yesterdayTasks = JSON.parse(savedTasksJson);
+                let scheduleText = '';
+
+                const sortedTasks = yesterdayTasks.sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+                sortedTasks.forEach(task => {
+                    const startTimeStr = task.startTime;
+                    
+                    const [startHour, startMinute] = startTimeStr.split(':').map(Number);
+                    const startMinutes = startHour * 60 + startMinute;
+                    const endMinutes = startMinutes + task.duration;
+                    const endTimeStr = formatMinutesToTime(endMinutes);
+                    
+                    scheduleText += `${startTimeStr} - ${endTimeStr}: ${task.name}\n`;
+                });
+
+                yesterdayTasksDiv.textContent = scheduleText;
+            } else {
+                yesterdayTasksDiv.textContent = '前日のスケジュールは保存されていません。';
             }
         }
 
-        /**
-         * 次の参加者の確認画面へ進む
-         */
-        function nextParticipant() {
-            participantCount++;
-            updateCheckScreen();
-        }
 
-        /**
-         * ゲームをリセットし、設定画面に戻る
-         */
-        function resetGame() {
-            roles = [];
-            participantCount = 0;
-            // 画面切り替え
-            document.getElementById('check-screen').style.display = 'none';
-            document.getElementById('settings-screen').style.display = 'block';
-            updateTotalParticipants(); // ボタンの状態を更新
-        }
-
-        // 初期化処理: ページ読み込み後に実行される
-        document.addEventListener('DOMContentLoaded', () => {
-            addRoleInput(); // 最初に役割入力フィールドを一つ追加
+        // 日付が変わったときにスケジュールとToDoリストを読み込むイベントリスナー
+        dateInput.addEventListener('change', () => {
+            loadSchedule();
+            loadTodos();
+            const selectedDate = new Date(dateInput.value);
+            loadYesterdaySchedule(selectedDate);
         });
+
+
+        // --- ヘルパー関数 ---
+
+        /**
+         * 分をHH:MM形式の文字列にフォーマットするヘルパー関数
+         */
+        function formatMinutesToTime(totalMinutes) {
+            const hours = Math.floor(totalMinutes / 60) % 24; 
+            const minutes = totalMinutes % 60;
+            
+            const hoursStr = String(hours).padStart(2, '0');
+            const minutesStr = String(minutes).padStart(2, '0');
+            
+            return `${hoursStr}:${minutesStr}`;
+        }
+
+        /**
+         * Dateオブジェクトを「Y年M月D日」形式の文字列にフォーマットするヘルパー関数
+         */
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            return `${year}年${month}月${day}日`;
+        }
     </script>
 </body>
 </html>
